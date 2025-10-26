@@ -12,8 +12,7 @@ interface Message {
 
 const STORAGE_KEY = 'ai_chat_messages';
 const CLEANUP_INTERVAL = 24 * 60 * 60 * 1000;
-const API_URL = 'https://functions.poehali.dev/7a89db06-7752-4cc5-b58a-9a9235d4033a';
-const API_KEY = 'madai_nMajoRqgDy5W6VDBlhJLjdLDP210ErVBR8cfBKySgj0';
+const API_URL = 'https://functions.poehali.dev/2080a51d-5d10-4f34-8529-7be5464bd9a3';
 
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -98,8 +97,7 @@ const Index = () => {
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-api-key': API_KEY
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           prompt: userMessage.content,
