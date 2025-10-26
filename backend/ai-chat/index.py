@@ -56,10 +56,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        conversation_history = []
+        for msg in messages:
+            conversation_history.append({
+                'role': msg.get('role', 'user'),
+                'content': msg.get('content', '')
+            })
+        
+        conversation_history.append({
+            'role': 'user',
+            'content': prompt
+        })
+        
         request_payload = json.dumps({
-            'prompt': prompt,
-            'messages': messages
+            'messages': conversation_history
         }).encode('utf-8')
+        
+        print(f'Sending request to {AI_API_URL}')
+        print(f'Payload: {request_payload.decode("utf-8")}')
         
         req = urllib.request.Request(
             AI_API_URL,
@@ -73,6 +87,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         with urllib.request.urlopen(req, timeout=30) as response:
             response_data = response.read().decode('utf-8')
+            print(f'Response received: {response_data}')
             ai_response = json.loads(response_data)
         
         return {
@@ -87,6 +102,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
     except urllib.error.HTTPError as e:
         error_body = e.read().decode('utf-8') if e.fp else str(e)
+        print(f'HTTPError {e.code}: {error_body}')
         return {
             'statusCode': e.code,
             'headers': {
