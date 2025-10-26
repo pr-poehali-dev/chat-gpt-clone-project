@@ -102,8 +102,8 @@ const Index = () => {
           'X-api-key': API_KEY
         },
         body: JSON.stringify({
-          message: userMessage.content,
-          history: messages.map(m => ({
+          prompt: userMessage.content,
+          messages: messages.map(m => ({
             role: m.role,
             content: m.content
           }))
@@ -111,15 +111,35 @@ const Index = () => {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API error:', response.status, errorText);
         throw new Error(`API error: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('API response:', data);
+      
+      let responseText = '';
+      if (typeof data === 'string') {
+        responseText = data;
+      } else if (data.response) {
+        responseText = data.response;
+      } else if (data.message) {
+        responseText = data.message;
+      } else if (data.text) {
+        responseText = data.text;
+      } else if (data.content) {
+        responseText = data.content;
+      } else if (data.answer) {
+        responseText = data.answer;
+      } else {
+        responseText = JSON.stringify(data);
+      }
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.response || data.message || 'Извините, не удалось получить ответ',
+        content: responseText || 'Извините, не удалось получить ответ',
         timestamp: Date.now()
       };
 
@@ -132,7 +152,7 @@ const Index = () => {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Произошла ошибка при отправке сообщения. Пожалуйста, попробуйте снова.',
+        content: `Ошибка подключения к API. ${error instanceof Error ? error.message : 'Проверьте настройки.'}`,
         timestamp: Date.now()
       };
 
